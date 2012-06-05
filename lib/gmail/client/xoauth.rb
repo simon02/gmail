@@ -21,14 +21,12 @@ module Gmail
 
       def login(raise_errors=false)
         if @two_legged
-          puts 'using 2lo'
           @imap and @logged_in = (login = @imap.authenticate('XOAUTH', username,
-            :two_legged      => two_legged,
-            :token           => token,
-            :token_secret    => secret
+            :two_legged      => true,
+            :consumer_key    => consumer_key,
+            :consumer_secret => consumer_secret
           )) && login.name == 'OK'
         else
-          puts 'using 3lo'
           @imap and @logged_in = (login = @imap.authenticate('XOAUTH', username,
             :consumer_key    => consumer_key,
             :consumer_secret => consumer_secret,
