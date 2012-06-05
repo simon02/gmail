@@ -5,12 +5,14 @@ module Gmail
     class XOAuth < Base
       attr_reader :token
       attr_reader :secret
+      attr_reader :two_legged
       attr_reader :consumer_key
       attr_reader :consumer_secret
 
       def initialize(username, options={})
         @token           = options.delete(:token)
         @secret          = options.delete(:secret)
+        @two_legged      = options.delete(:two_legged)
         @consumer_key    = options.delete(:consumer_key)
         @consumer_secret = options.delete(:consumer_secret)
        
@@ -18,12 +20,20 @@ module Gmail
       end
 
       def login(raise_errors=false)
-        @imap and @logged_in = (login = @imap.authenticate('XOAUTH', username,
-          :consumer_key    => consumer_key,
-          :consumer_secret => consumer_secret,
-          :token           => token,
-          :token_secret    => secret
-        )) && login.name == 'OK'
+        if @two_legged
+          @imap and @logged_in = (login = @imap.authenticate('XOAUTH', username,
+            :two_legged      => two_legged,
+            :token           => token,
+            :token_secret    => secret
+          )) && login.name == 'OK'
+        else
+          @imap and @logged_in = (login = @imap.authenticate('XOAUTH', username,
+            :consumer_key    => consumer_key,
+            :consumer_secret => consumer_secret,
+            :token           => token,
+            :token_secret    => secret
+          )) && login.name == 'OK'
+        end
       rescue
         raise_errors and raise AuthorizationError, "Couldn't login to given GMail account: #{username}"        
       end
